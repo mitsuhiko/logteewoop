@@ -1,0 +1,23 @@
+<!doctype html>
+<script>
+  var connection = new WebSocket("ws://127.0.0.1:8001/ws");
+  var lines = [];
+  connection.onopen = function () {
+    connection.send(JSON.stringify({
+      op: 'subscribe',
+      streamId: '65d9f237-2801-4b99-844f-cd9f29084b6e'
+    }));
+  };
+  connection.onmessage = function (msg) {
+    var msg = JSON.parse(msg.data);
+    if (msg.op === 'tail') {
+      msg.lines.forEach(function (line) {
+        lines[line.idx] = line;
+      });
+      document.getElementById('output').innerText = lines.slice(-50).map(function (item) {
+        return '[' + msg.streamId + '|' + item.ts + '] ' + item.line;
+      }).join('');
+    }
+  };
+</script>
+<pre id="output"></pre>
